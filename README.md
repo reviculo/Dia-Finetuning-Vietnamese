@@ -39,7 +39,9 @@ https://github.com/user-attachments/assets/8e5604eb-e3b7-4cee-99e6-f18dfd546788
 ## Inference Tips (Vietnamese)
 - Transcripts: begin with [01] or [KienThucQuanSu] then text
 - For example: [KienThucQuanSu] Thủ tướng cũng yêu cầu các Bộ, cơ quan trung ương, địa phương tăng cường công tác thanh tra, kiểm tra việc sắp xếp, xử lý tài sản trước, trong và sau khi sắp xếp tổ chức bộ máy, sắp xếp đơn vị hành chính.
+- Multispeaker: [KienThucQuanSu] Thủ tướng cũng yêu cầu các Bộ, cơ quan trung ương, địa phương tăng cường công tác thanh tra.[CoBaBinhDuong] Kiểm tra việc sắp xếp, xử lý tài sản trước, trong và sau khi sắp xếp tổ chức bộ máy, sắp xếp đơn vị hành chính.
 - You can lookup the speaker ID in speaker table ID which is already existed in Gradio Inference
+- With Multispeaker , you can change the speaker with speaker's tag. Make sure it after the dot. 
 <img width="1545" height="903" alt="Screenshot 2025-08-16 at 09 53 21" src="https://github.com/user-attachments/assets/42a24781-0aaf-402d-aa37-901f0046c9cc" />
 
 ## Future Feature Improve
