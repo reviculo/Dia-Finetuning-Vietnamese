@@ -11,8 +11,8 @@ Dia is a 1.6B parameter text to speech model created by Nari Labs with 1.6B para
 - ✅ Friendly Gradio Inference
 - ✅ Speed up by `torch.compile`, `bfloat16`, 8-bit optimizer
 
-- You can try demo at : https://huggingface.co/spaces/cosrigel/Dia-Vietnamese
-- You can use our checkpoint to use the inference at : https://huggingface.co/cosrigel/dia-finetuning-vnese
+You can try demo at : https://huggingface.co/spaces/cosrigel/Dia-Vietnamese
+You can use our checkpoint to use the inference at : https://huggingface.co/cosrigel/dia-finetuning-vnese
 ---
 
 ## Data Preparation for Finetuning model
