@@ -1,7 +1,11 @@
 # 🇻🇳 Dia TTS – Fine-Tuning Vietnamese
 
-Dia is a 1.6B parameter text to speech model created by Nari Labs with 1.6B parameters. Dia directly generates highly realistic dialogue from a transcript. This project has been finetuned for using Vietnamese, creat natural voice and tone control.
+High‑quality Vietnamese speech generation on top of Nari Labs’ DIA 1.6B. This repo provides an unofficial fine‑tune enabling natural Vietnamese with controllable style, multi‑speaker accents, and a friendly Gradio demo.
 ---
+
+⚠️ Status: Community release. Upstream DIA currently ships English generation; this project adds Vietnamese via fine‑tuning. Follow ethical use guidelines below.
+Maintainer: Tuan Anh — AI/ML Researcher @ Appota
+Compute: Trained and developed on Appota’s server infrastructure
 
 ## Features
 
@@ -45,6 +49,12 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
+## Acknowledgements
+- Appota — compute & infrastructure support for training and development
+- Nari Labs – DIA (architecture & checkpoints)
+- Descript Audio Codec (DAC) for discrete audio tokens
+- Hugging Face Transformers/PEFT/Accelerate
+
 ## Citation
 ```
 If you use this work, please cite the upstream DIA model and this repository.
