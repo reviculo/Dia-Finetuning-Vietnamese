@@ -22,7 +22,7 @@ import gradio as gr
 
 # --- Quét folder chứa tất cả checkpoint .pth ---
 CKPT_DIR = Path("checkpoints_vietnamese")
-ckpt_files = sorted([str(p) for p in CKPT_DIR.glob("*.pth")])
+ckpt_files = sorted([str(p) for p in CKPT_DIR.glob("*.safetensors")])
 if not ckpt_files:
     raise RuntimeError(f"No checkpoints found in {CKPT_DIR}")
 
@@ -162,71 +162,6 @@ def run_inference(
 
     if not text_input or text_input.isspace():
         raise gr.Error("Text input cannot be empty.")
-    
-    # --- Alias mapping ---
-    alias_map = {
-        "[01]": "[KienThucQuanSu]",
-        "[02]": "[kenhCoVan]",
-        "[03]": "[HocEnglishOnline]",
-        "[04]": "[CoBaBinhDuong]",
-        "[05]": "[AnimeRewind.Official]",
-        "[06]": "[ThePresentWriter]",
-        "[07]": "[HuynhDuyKhuongofficial]",
-        "[08]": "[SUCKHOETAMSINH]",
-        "[09]": "[BroNub]",
-        "[10]": "[5PhutCrypto]",
-        "[11]": "[HuynhLapOfficial]",
-        "[12]": "[TIN3PHUT]",
-        "[13]": "[VuiVe]",
-        "[14]": "[SachBiQuyetThanhCong]",
-        "[15]": "[NgamRadio]",
-        "[16]": "[W2WAnime]",
-        "[17]": "[BIBITV8888]",
-        "[18]": "[DongMauViet]",
-        "[19]": "[PTTH-TRT]",
-        
-        
-        "[54]": "[NhaNhac555]",
-        "[20]": "[sunhuynpodcast.]",
-        "[21]": "[MensBay]",
-        "[22]": "[BoringPPL]",
-        "[23]": "[JVevermind]",
-        "[24]": "[HocvienBovaGau]",
-        "[25]": "[Web5Ngay]",
-        "[26]": "[TULEMIENTAY]",
-        "[27]": "[CosmicWriter]",
-        "[28]": "[SukiesKitchen]",
-        "[29]": "[AnhBanThan]",
-        "[30]": "[HappyHidari]",
-        "[31]": "[RuaNgao]",
-        "[32]": "[Nhantaidaiviet]",
-        "[33]": "[PhanTichGame]",
-        "[34]": "[SpiderumBooks]",
-        "[35]": "[TuanTienTi2911]",
-        "[36]": "[W2WCartoon]",
-        "[37]": "[HoabinhTVgo]",
-        "[38]": "[CuThongThai]",
-        "[39]": "[BaodientuVOV]",
-        "[40]": "[RiwayLegal]",
-        "[41]": "[meGAME_Official]",
-        
-        "[42]": "[TintucBitcoin247]",
-        "[43]": "[Xanh24h]",
-        "[44]": "[MangoVid]",
-        "[45]": "[TheGioiLaptop]",
-        "[46]": "[ThanhPahm]",
-        "[47]": "[ThaiNhiTV]",
-        "[48]": "[VuTruNguyenThuy]",
-        "[49]": "[MeovatcuocsongLNV]",
-        "[50]": "[NTNVlogsNguyenThanhNam]",
-        "[51]": "[HIEUROTRONG5PHUT-NTKT]",
-        "[52]": "[BachHoaXANHcom]",
-        "[53]": "[PTTH-TRT]",
-    }
-
-    # --- Thay thế alias bằng tag gốc ---
-    for short_tag, full_tag in alias_map.items():
-        text_input = text_input.replace(short_tag, full_tag)
 
     temp_txt_file_path = None
     temp_audio_prompt_path = None
@@ -575,35 +510,21 @@ with gr.Blocks(css=css) as demo:
                 autoplay=False,
             )
             
-            gr.Markdown("### 🟢 Danh sách giọng nói chất lượng cao")
+            gr.Markdown("📌 **Copy tag người nói như `[KienThucQuanSu]` để dán vào văn bản sinh giọng phù hợp.**")
             
+            gr.Markdown("### 🟢 Good Voice Speakers (Rõ, chuẩn, chất lượng cao)")
             gr.Dataframe(
-                headers=["Mã số", "Tên kênh", "Vùng miền", "Giới tính", "Phong cách / Chủ đề phù hợp"],
+                headers=["North Male", "North Female", "South Male", "South Female", "Center Female"],
                 value=[
-                    ["[01]", "[KienThucQuanSu]", "Miền Bắc", "Nam", "Thuyết minh, quân sự, kể chuyện nghiêm túc"],
-                    ["[02]", "[kenhCoVan]", "Miền Bắc", "Nữ", "Tư vấn, podcast, giọng nhẹ nhàng"],
-                    ["[03]", "[HocEnglishOnline]", "Miền Nam", "Nam", "Dạy học, phát âm rõ ràng"],
-                    ["[04]", "[CoBaBinhDuong]", "Miền Nam", "Nữ", "Kể chuyện hài hước, gần gũi"],
-                    ["[05]", "[AnimeRewind.Official]", "Miền Bắc", "Nam", "Bình luận anime, trẻ trung"],
-                    ["[06]", "[ThePresentWriter]", "Miền Bắc", "Nữ", "Chia sẻ kiến thức, tự sự"],
-                    ["[07]", "[HuynhDuyKhuongofficial]", "Miền Nam", "Nam", "Tạo động lực, kỹ năng"],
-                    ["[08]", "[SUCKHOETAMSINH]", "Miền Nam", "Nữ", "Y tế, sức khỏe cộng đồng"],
-                    ["[09]", "[BroNub]", "Miền Bắc", "Nam", "Hài hước, hoạt hình"],
-                    ["[10]", "[5PhutCrypto]", "Miền Bắc", "Nữ", "Phân tích tài chính, công nghệ"],
-                    ["[11]", "[HuynhLapOfficial]", "Miền Nam", "Nam", "Kể chuyện hài, diễn cảm"],
-                    ["[12]", "[TIN3PHUT]", "Miền Nam", "Nữ", "Tin nhanh, điểm tin 3 phút"],
-                    ["[13]", "[VuiVe]", "Miền Bắc", "Nam", "Tâm lý, giải trí vui tươi"],
-                    ["[14]", "[SachBiQuyetThanhCong]", "Miền Bắc", "Nữ", "Truyền cảm hứng, kỹ năng sống"],
-                    ["[15]", "[NgamRadio]", "Miền Nam", "Nam", "Giọng trầm, đọc truyện"],
-                    ["[16]", "[W2WAnime]", "Miền Bắc", "Nam", "Giới thiệu anime, văn hóa Nhật"],
-                    ["[17]", "[BIBITV8888]", "Miền Bắc", "Nữ", "Chia sẻ anime và truyện"],
-                    ["[18]", "[DongMauViet]", "Miền Bắc", "Nam", "Lịch sử, truyền thống, tự hào dân tộc"],
-                    ["[19]", "[PTTH-TRT]", "Miền Trung", "Nữ", "Lịch sử, truyền thống, tự hào dân tộc"],
-
+                    ["[KienThucQuanSu]", "[kenhCoVan]", "[HocEnglishOnline]", "[CoBaBinhDuong]", "[PTTH-TRT]"],
+                    ["[AnimeRewind.Official]", "[ThePresentWriter]", "[HuynhDuyKhuongofficial]", "[SUCKHOETAMSINH]", ""],
+                    ["[BroNub]", "[5PhutCrypto]", "[HuynhLapOfficial]", "[TIN3PHUT]", ""],
+                    ["[VuiVe]", "[SachBiQuyetThanhCong]", "[NgamRadio]", "", ""],
+                    ["[W2WAnime]", "[BIBITV8888]", "", "", ""],
+                    ["[DongMauViet]", "", "", "", ""],
                 ],
                 interactive=False
             )
-
             
             gr.Markdown("### 🟡 Normal Voice Speakers (Dùng được, giọng khá ổn)")
             gr.Dataframe(
