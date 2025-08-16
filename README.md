@@ -4,7 +4,7 @@ High‑quality Vietnamese speech generation on top of Nari Labs’ DIA 1.6B. Thi
 ---
 
 ⚠️ Status: Community release. Upstream DIA currently ships English generation; this project adds Vietnamese via fine‑tuning. Follow ethical use guidelines below.
-- Maintainer: Tuan Anh — AI/ML Researcher @ Appota
+- Maintainer: Tuan Anh — AI/ML Researcher @ Appota SRD (R&D Department)
 - Compute: Trained and developed on Appota’s server infrastructure
 
 ## Features
@@ -55,7 +55,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 ## Acknowledgements
-- Appota — compute & infrastructure support for training and development
+- Appota SRD (R&D Department) — compute & infrastructure support for training and development
 - Nari Labs – DIA (architecture & checkpoints)
 - Descript Audio Codec (DAC) for discrete audio tokens
 - Hugging Face Transformers/PEFT/Accelerate
