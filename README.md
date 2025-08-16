@@ -7,6 +7,12 @@ High‑quality Vietnamese speech generation on top of Nari Labs’ DIA 1.6B. Thi
 - Maintainer: Tuan Anh — AI/ML Researcher @ Appota SRD (R&D Department)
 - Compute: Trained and developed on Appota’s server infrastructure
 
+
+
+https://github.com/user-attachments/assets/8e5604eb-e3b7-4cee-99e6-f18dfd546788
+
+
+
 ## Features
 
 - ✅ Fine-tune model Dia 1.6B with Vietnamese Dataset
