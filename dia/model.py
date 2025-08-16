@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import torchaudio
 from huggingface_hub import hf_hub_download
+from typing import Optional
+import safetensors.torch as st
 
 from .audio import audio_to_codebook, codebook_to_audio
 from .config import DiaConfig
@@ -76,15 +78,15 @@ class Dia:
     @classmethod
     def from_local(cls, config_path: str, checkpoint_path: str, device: torch.device | None = None) -> "Dia":
         """Loads the Dia model from local configuration and checkpoint files.
-
+    
         Args:
             config_path: Path to the configuration JSON file.
-            checkpoint_path: Path to the model checkpoint (.pth) file.
+            checkpoint_path: Path to the model checkpoint (.safetensors or .pth).
             device: The device to load the model onto. If None, will automatically select the best available device.
-
+    
         Returns:
             An instance of the Dia model loaded with weights and set to eval mode.
-
+    
         Raises:
             FileNotFoundError: If the config or checkpoint file is not found.
             RuntimeError: If there is an error loading the checkpoint.
@@ -92,23 +94,52 @@ class Dia:
         config = DiaConfig.load(config_path)
         if config is None:
             raise FileNotFoundError(f"Config file not found at {config_path}")
-
+    
         dia = cls(config, device)
-
+    
         try:
-            #state_dict = torch.load(checkpoint_path, map_location=dia.device)
-            #dia.model.load_state_dict(state_dict)
-            checkpoint = torch.load(checkpoint_path, map_location=device)
-            if "model" in checkpoint:
-                state_dict = checkpoint["model"]  # lấy riêng phần model
+            ckpt_path = str(checkpoint_path)
+    
+            # 1) Đọc checkpoint: hỗ trợ cả .safetensors và .pth
+            if ckpt_path.endswith(".safetensors"):
+                raw = st.load_file(ckpt_path)  # dict tên->tensor (state_dict phẳng)
             else:
-                state_dict = checkpoint
-            dia.model.load_state_dict(state_dict)
+                # PyTorch 2.6 mặc định weights_only=True → cần tắt để đọc .pth cũ
+                raw = torch.load(ckpt_path, map_location=dia.device, weights_only=False)
+    
+            # 2) Unwrap các biến thể thường gặp của state_dict
+            if isinstance(raw, dict):
+                state_dict = (
+                    raw.get("state_dict")
+                    or raw.get("model_state_dict")
+                    or raw.get("ema_state_dict")
+                )
+                if state_dict is None:
+                    if isinstance(raw.get("model"), dict):
+                        state_dict = raw["model"]
+                    else:
+                        state_dict = raw  # đã là state_dict phẳng
+            else:
+                raise RuntimeError(f"Unsupported checkpoint type: {type(raw)}")
+    
+            # 3) Chuẩn hoá tên key (bỏ 'module.' / 'model.')
+            def _norm(k: str) -> str:
+                k = k.replace("module.", "")
+                if k.startswith("model."):
+                    k = k[6:]
+                return k
+    
+            state_dict = { _norm(k): v for k, v in state_dict.items() }
+    
+            # 4) Nạp vào kiến trúc (nới lỏng để tránh crash nếu lệch vài key phụ)
+            missing, unexpected = dia.model.load_state_dict(state_dict, strict=False)
+            print(f"[load] missing={len(missing)} unexpected={len(unexpected)}")
+    
         except FileNotFoundError:
             raise FileNotFoundError(f"Checkpoint file not found at {checkpoint_path}")
         except Exception as e:
             raise RuntimeError(f"Error loading checkpoint from {checkpoint_path}") from e
-
+    
         dia.model.to(dia.device)
         dia.model.eval()
         dia._load_dac_model()
