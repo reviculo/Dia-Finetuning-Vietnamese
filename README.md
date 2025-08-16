@@ -63,7 +63,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-## Usage Example
+## Usage Example Training
 ```bash
 python finetune.py \
   --config configs/config.json \
