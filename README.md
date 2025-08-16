@@ -16,7 +16,7 @@ High‑quality Vietnamese speech generation on top of Nari Labs’ DIA 1.6B. Thi
 - ✅ Speed up by `torch.compile`, `bfloat16`, 8-bit optimizer
 ---
 - You can try demo at : https://huggingface.co/spaces/cosrigel/Dia-Vietnamese
-- You can use our checkpoint to use the inference at : https://huggingface.co/cosrigel/dia-finetuning-vnese
+- You can use our finetune model at : https://huggingface.co/cosrigel/dia-finetuning-vnese
 ---
 
 ## Data Preparation for Finetuning model
