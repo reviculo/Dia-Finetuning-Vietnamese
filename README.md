@@ -42,7 +42,7 @@ pip install -e .
 ## Citation
 ```
 If you use this work, please cite the upstream DIA model and this repository.
-@misc{dia-ft-vi,
+@misc{Dia-Finetuning-Vietnamese,
   title        = {DIA Vietnamese Fine-Tuning} ,
   author       = {Cos Rigel},
   year         = {2025},
