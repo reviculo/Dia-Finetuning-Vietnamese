@@ -1,6 +1,8 @@
 # 🇻🇳 Dia TTS – Fine-Tuning Vietnamese
 
-High‑quality Vietnamese speech generation on top of Nari Labs’ DIA 1.6B. This repo provides an unofficial fine‑tune enabling natural Vietnamese with controllable style, multi‑speaker accents, and a friendly Gradio demo.
+High‑quality Vietnamese speech generation 44.1 kHz on top of Nari Labs’ DIA 1.6B. 
+---
+This repo provides an unofficial fine‑tune enabling natural Vietnamese with controllable style, multi‑speaker accents, and a friendly Gradio demo.
 ---
 
 ⚠️ Status: Community release. Upstream DIA currently ships English generation; this project adds Vietnamese via fine‑tuning. Follow ethical use guidelines below.
