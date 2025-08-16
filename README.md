@@ -4,8 +4,8 @@ High‑quality Vietnamese speech generation on top of Nari Labs’ DIA 1.6B. Thi
 ---
 
 ⚠️ Status: Community release. Upstream DIA currently ships English generation; this project adds Vietnamese via fine‑tuning. Follow ethical use guidelines below.
-Maintainer: Tuan Anh — AI/ML Researcher @ Appota
-Compute: Trained and developed on Appota’s server infrastructure
+- Maintainer: Tuan Anh — AI/ML Researcher @ Appota
+- Compute: Trained and developed on Appota’s server infrastructure
 
 ## Features
 
@@ -39,6 +39,11 @@ Compute: Trained and developed on Appota’s server infrastructure
 - ☐ Increase the quality of voice-cloning
 - ☐ Add emotion to dataset and model so you can you emotion's tag like : [cười], [khóc], [ho],...
 - ☐ Adjust the voice of multispeaker so they can sound like they're all in one room speaking to each other.
+
+## Ethics & Responsible Use
+- Obtain consent for any real person’s voice.
+- Disclose synthetic audio in production settings.
+- No impersonation, harassment, or deceptive content.
 
 ## 🛠️ Setup
 
