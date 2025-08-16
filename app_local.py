@@ -20,9 +20,22 @@ sys.path.append("dia-finetuning/dia")
 from pathlib import Path
 import gradio as gr
 
+from safetensors.torch import load_file as safe_load_file  # <-- THÊM
+
+# --- Patch PyTorch 2.6: đảm bảo torch.load không dùng weights_only=True mặc định ---
+_orig_torch_load = torch.load
+def _torch_load_compat(*args, **kwargs):
+    kwargs.setdefault("weights_only", False)  # ép về False để tương thích checkpoint cũ
+    return _orig_torch_load(*args, **kwargs)
+torch.load = _torch_load_compat
+# --- Hết patch ---
+
 # --- Quét folder chứa tất cả checkpoint .pth ---
 CKPT_DIR = Path("checkpoints_vietnamese")
-ckpt_files = sorted([str(p) for p in CKPT_DIR.glob("*.safetensors")])
+ckpt_files = sorted([str(p) for p in CKPT_DIR.glob("*.safetensors")] +
+                    [str(p) for p in CKPT_DIR.glob("*.pt")] +
+                    [str(p) for p in CKPT_DIR.glob("*.pth")])
+
 if not ckpt_files:
     raise RuntimeError(f"No checkpoints found in {CKPT_DIR}")
 
@@ -39,15 +52,40 @@ status = gr.Textbox(label="Model Status", interactive=False)
 # Hàm để load model lại mỗi khi chọn checkpoint khác
 def reload_model(ckpt_path):
     global model
+
+    # Nếu là .safetensors: đọc an toàn bằng safetensors rồi convert sang .pt tạm
+    # để giữ nguyên luồng nạp của Dia.from_local (vốn dùng torch.load bên trong).
+    tmp_pt_path = None
+    if str(ckpt_path).endswith(".safetensors"):
+        state_dict = safe_load_file(str(ckpt_path), device="cpu")  # KHÔNG dùng pickle
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pt")
+        tmp_pt_path = tmp.name
+        tmp.close()
+        torch.save(state_dict, tmp_pt_path)  # chuyển dạng sang .pt (pickle) để Dia.from_local nạp
+
+        ckpt_to_load = tmp_pt_path
+    else:
+        ckpt_to_load = ckpt_path
+
+    # Nạp model theo config + checkpoint đã chuẩn hóa ở trên
     model = Dia.from_local(
         config_path=args.config,
-        checkpoint_path=ckpt_path,
+        checkpoint_path=ckpt_to_load,
         device=device
     )
 
+    # Dọn file tạm (nếu có)
+    if tmp_pt_path is not None:
+        try:
+            Path(tmp_pt_path).unlink(missing_ok=True)
+        except Exception:
+            pass
+
+    # FP16 nếu cần
     if args.half and hasattr(model, "model") and isinstance(model.model, torch.nn.Module):
         model.model = model.model.half()
 
+    # torch.compile nếu cần
     if args.compile and hasattr(model, "model") and isinstance(model.model, torch.nn.Module):
         model.model = torch.compile(model.model, backend="inductor")
 
