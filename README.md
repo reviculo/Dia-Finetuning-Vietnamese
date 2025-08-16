@@ -11,8 +11,8 @@ Dia is a 1.6B parameter text to speech model created by Nari Labs with 1.6B para
 - ✅ Friendly Gradio Inference
 - ✅ Speed up by `torch.compile`, `bfloat16`, 8-bit optimizer
 
-You can try demo at : https://huggingface.co/spaces/cosrigel/Dia-Vietnamese
-You can use our checkpoint to use the inference at : https://huggingface.co/cosrigel/dia-finetuning-vnese
+- You can try demo at : https://huggingface.co/spaces/cosrigel/Dia-Vietnamese
+- You can use our checkpoint to use the inference at : https://huggingface.co/cosrigel/dia-finetuning-vnese
 ---
 
 ## Data Preparation for Finetuning model
@@ -26,15 +26,15 @@ You can use our checkpoint to use the inference at : https://huggingface.co/cosr
 - You can use our checkpoint to use the inference at : https://huggingface.co/cosrigel/dia-finetuning-vnese
 
 ## Inference Tips (Vietnamese)
-Transcripts: begin with [01] or [KienThucQuanSu] then text
-For example: [KienThucQuanSu] Thủ tướng cũng yêu cầu các Bộ, cơ quan trung ương, địa phương tăng cường công tác thanh tra, kiểm tra việc sắp xếp, xử lý tài sản trước, trong và sau khi sắp xếp tổ chức bộ máy, sắp xếp đơn vị hành chính.
-You can lookup the speaker ID in speaker table ID which is already existed in Gradio Inference
+- Transcripts: begin with [01] or [KienThucQuanSu] then text
+- For example: [KienThucQuanSu] Thủ tướng cũng yêu cầu các Bộ, cơ quan trung ương, địa phương tăng cường công tác thanh tra, kiểm tra việc sắp xếp, xử lý tài sản trước, trong và sau khi sắp xếp tổ chức bộ máy, sắp xếp đơn vị hành chính.
+- You can lookup the speaker ID in speaker table ID which is already existed in Gradio Inference
 <img width="1545" height="903" alt="Screenshot 2025-08-16 at 09 53 21" src="https://github.com/user-attachments/assets/42a24781-0aaf-402d-aa37-901f0046c9cc" />
 
 ## Future Feature Improve
-☐ Increase the quality of voice-cloning
-☐ Add emotion to dataset and model so you can you emotion's tag like : [cười], [khóc], [ho],...
-☐ Adjust the voice of multispeaker so they can sound like they're all in one room speaking to each other.
+- ☐ Increase the quality of voice-cloning
+- ☐ Add emotion to dataset and model so you can you emotion's tag like : [cười], [khóc], [ho],...
+- ☐ Adjust the voice of multispeaker so they can sound like they're all in one room speaking to each other.
 
 ## 🛠️ Setup
 
