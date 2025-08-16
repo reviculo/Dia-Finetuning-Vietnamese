@@ -52,8 +52,7 @@ https://github.com/user-attachments/assets/8e5604eb-e3b7-4cee-99e6-f18dfd546788
 - Disclose synthetic audio in production settings.
 - No impersonation, harassment, or deceptive content.
 
-## 🛠️ Setup
-
+## 🛠️ Installation
 ```bash
 git clone https://github.com/TuananhCR/Dia-Finetuning-Vietnamese
 cd dia-vietnamese
@@ -61,6 +60,17 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
+
+## Usage Example
+```bash
+python finetune.py \
+  --config configs/config.json \
+  --dataset  \
+  --hub_model nari-labs/Dia-1.6B \
+  --run_name dia_vietnamese_experiment \
+  --output_dir ./checkpoints
+```
+
 ## Acknowledgements
 - Appota SRD (R&D Department) — compute & infrastructure support for training and development
 - Nari Labs – DIA (architecture & checkpoints)
