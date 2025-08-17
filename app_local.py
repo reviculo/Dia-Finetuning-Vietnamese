@@ -19,14 +19,19 @@ sys.path.append("dia-finetuning/dia")
 
 from pathlib import Path
 import gradio as gr
-
+import safetensors.torch as st
 from safetensors.torch import load_file as safe_load_file  # <-- THÊM
 
 # --- Patch PyTorch 2.6: đảm bảo torch.load không dùng weights_only=True mặc định ---
 _orig_torch_load = torch.load
-def _torch_load_compat(*args, **kwargs):
-    kwargs.setdefault("weights_only", False)  # ép về False để tương thích checkpoint cũ
-    return _orig_torch_load(*args, **kwargs)
+def _torch_load_compat(path, *args, **kwargs):
+    """
+    Load checkpoint tương thích cả .pt/.pth và .safetensors
+    """
+    if isinstance(path, str) and path.endswith(".safetensors"):
+        return st.load_file(path)
+    else:
+        return _orig_torch_load(path, *args, **kwargs)
 torch.load = _torch_load_compat
 # --- Hết patch ---
 
@@ -136,8 +141,12 @@ try:
     if args.compile:
         ptmodel = torch.compile(ptmodel, backend="inductor")
 
-    state = torch.load(args.local_ckpt, map_location="cpu")
-    ptmodel.load_state_dict(state["model"])
+    state = _torch_load_compat(args.local_ckpt, map_location="cpu")
+    if "model" in state:
+        ptmodel.load_state_dict(state["model"])
+    else:
+        ptmodel.load_state_dict(state)
+    print("✅ Model loaded successfully!")
     ptmodel = ptmodel.to(device).eval()
 
     model = Dia(cfg, device)
