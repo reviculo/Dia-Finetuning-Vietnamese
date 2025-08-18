@@ -33,7 +33,7 @@ torch.load = _torch_load_compat
 # --- Hết patch ---
 
 # --- Quét folder chứa tất cả checkpoint .pth ---
-CKPT_DIR = Path("checkpoints_vietnamese")
+CKPT_DIR = Path("dia")
 ckpt_files = sorted([str(p) for p in CKPT_DIR.glob("*.safetensors")] +
                     [str(p) for p in CKPT_DIR.glob("*.pt")] +
                     [str(p) for p in CKPT_DIR.glob("*.pth")])
