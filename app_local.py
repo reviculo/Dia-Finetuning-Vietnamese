@@ -14,9 +14,6 @@ from dia.model import Dia
 from dia.config import DiaConfig
 from dia.layers import DiaModel
 import dac
-import sys
-sys.path.append("dia-finetuning/dia")
-
 from pathlib import Path
 import gradio as gr
 import safetensors.torch as st
