@@ -143,7 +143,7 @@ try:
         ptmodel.load_state_dict(state["model"])
     else:
         ptmodel.load_state_dict(state)
-    print("✅ Model loaded successfully!")
+    print("✅ Model loaded successfully! Please wait...")
     ptmodel = ptmodel.to(device).eval()
 
     model = Dia(cfg, device)
