@@ -104,7 +104,7 @@ parser.add_argument(
     "--device", type=str, default=None, help="Force device (e.g., 'cuda', 'mps', 'cpu')"
 )
 parser.add_argument("--share", action="store_true", help="Enable Gradio sharing")
-parser.add_argument("--local_ckpt", type=str, default="checkpoints_vietnamese/model.safetensors", help="path to your local checkpoint")
+parser.add_argument("--local_ckpt", type=str, default="model.safetensors", help="path to your local checkpoint")
 parser.add_argument("--config", type=str, default="dia/config_inference.json", help="path to your inference")
 parser.add_argument("--half", type=bool, default=False, help="load model in fp16")
 parser.add_argument("--compile", type=bool, default=False, help="torch compile model")
