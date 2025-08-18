@@ -56,6 +56,10 @@ https://github.com/user-attachments/assets/8e5604eb-e3b7-4cee-99e6-f18dfd546788
 
 ## 🛠️ Guide for Installation ( Hướng dẫn cho người mới sử dụng cài đặt model chạy inference ) 
 
+### Requirements
+- Free up 150GB storage
+- 16GB RAM
+
 ### Bước 1: Nhập bash vào terminal để cài đặt Git Repo
 
 ```bash
@@ -86,8 +90,11 @@ python app_local.py
 - Khuyến khích sử dụng cuda để chạy hoặc thời gian generate sẽ khá lâu ( Mình sẽ làm việc thêm để tối ưu nó )
 - Thời gian load đã đo được:
 + 1000 từ sử dụng cuda, GPU RTX A6000 sẽ mất 79 giây
++ Trong trường hợp các bác sử dụng Mac Mini M4 như mình chạy mps đuối quá có thể về cpu nhá :))
 
-
+```bash
+python app_local.py --device cpu
+```
 
 ## Usage Example Training
 ```bash
