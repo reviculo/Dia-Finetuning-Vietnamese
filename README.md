@@ -87,7 +87,7 @@ python -c 'from huggingface_hub import snapshot_download; snapshot_download("cos
 python app_local.py
 ```
 ### NOTE: 
-- Khuyến khích sử dụng cuda để chạy hoặc thời gian generate sẽ khá lâu ( Mình sẽ làm việc thêm để tối ưu nó )
+- Khuyến khích sử dụng **CUDA** để chạy hoặc thời gian generate sẽ khá lâu ( Mình sẽ làm việc thêm để tối ưu nó ) - Nếu không có CUDA thì có thể sử dụng **CPU** 
 - Thời gian load đã đo được:
 + 1000 từ sử dụng cuda, GPU RTX A6000 sẽ mất 79 giây
 + Trong trường hợp các bác sử dụng Mac Mini M4 như mình chạy mps đuối quá có thể về cpu nhá :))
