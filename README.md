@@ -54,14 +54,40 @@ https://github.com/user-attachments/assets/8e5604eb-e3b7-4cee-99e6-f18dfd546788
 - Disclose synthetic audio in production settings.
 - No impersonation, harassment, or deceptive content.
 
-## 🛠️ Installation
+## 🛠️ Guide for Installation ( Hướng dẫn cho người mới sử dụng cài đặt model chạy inference ) 
+
+### Bước 1: Nhập bash vào terminal để cài đặt Git Repo
+
 ```bash
 git clone https://github.com/TuananhCR/Dia-Finetuning-Vietnamese
-cd dia-vietnamese
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
+### Bước 2: Login hugging face và tạo access token
+- Các bác mới sử dụng hugging face cần tạo tài khoản và login vào , sau đó vào link https://huggingface.co/cosrigel/dia-finetuning-vnese
+- Đồng ý Agree to share your contact information to access to this model.
+- Sau đó vào góc trên bên phải có hình cá nhân mình, nhấn vào phía dưới có Access Token, tạo riêng bản thân một token và NHỚ SAO CHÉP LẠI (KHÔNG PUBLIC) nó sẽ là dạng :  hf_XXXXXXXXXcKXXXXXXXXX
+
+<img width="1275" height="734" alt="Screenshot 2025-08-18 at 12 02 35" src="https://github.com/user-attachments/assets/09b8d1d9-5c68-43ac-a258-ca691ebad02e" />
+
+
+### Bước 3: Tải và cài đặt safetensors
+```bash
+python -m pip install -U "huggingface_hub[cli]"
+huggingface-cli login --token <Thay bằng hf__ của các bạn vừa sao chép> --add-to-git-credential
+python -c 'from huggingface_hub import snapshot_download; snapshot_download("cosrigel/dia-finetuning-vnese", local_dir="dia", repo_type="model")'
+```
+### Bước 4: chạy inference chờ model load và thưởng thức.
+```bash
+python app_local.py
+```
+### NOTE: 
+- Khuyến khích sử dụng cuda để chạy hoặc thời gian generate sẽ khá lâu ( Mình sẽ làm việc thêm để tối ưu nó )
+- Thời gian load đã đo được:
++ 1000 từ sử dụng cuda, GPU RTX A6000 sẽ mất 79 giây
+
+
 
 ## Usage Example Training
 ```bash
