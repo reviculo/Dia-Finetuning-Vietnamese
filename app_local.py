@@ -1,4 +1,3 @@
-import scipy.signal
 import re
 import argparse
 import tempfile
@@ -14,8 +13,6 @@ from dia.model import Dia
 from dia.config import DiaConfig
 from dia.layers import DiaModel
 import dac
-from pathlib import Path
-import gradio as gr
 import safetensors.torch as st
 from safetensors.torch import load_file as safe_load_file  # <-- THÊM
 
