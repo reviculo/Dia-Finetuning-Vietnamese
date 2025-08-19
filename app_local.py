@@ -14,7 +14,7 @@ from dia.config import DiaConfig
 from dia.layers import DiaModel
 import dac
 import safetensors.torch as st
-from safetensors.torch import load_file as safe_load_file  # <-- THÊM
+from safetensors.torch import load_file as safe_load_file  
 
 # --- Patch PyTorch 2.6: đảm bảo torch.load không dùng weights_only=True mặc định ---
 _orig_torch_load = torch.load
@@ -27,7 +27,6 @@ def _torch_load_compat(path, *args, **kwargs):
     else:
         return _orig_torch_load(path, *args, **kwargs)
 torch.load = _torch_load_compat
-# --- Hết patch ---
 
 # --- Quét folder chứa tất cả checkpoint .pth ---
 CKPT_DIR = Path("dia")
