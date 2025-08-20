@@ -37,68 +37,84 @@ ckpt_files = sorted([str(p) for p in CKPT_DIR.glob("*.safetensors")] +
 if not ckpt_files:
     raise RuntimeError(f"No checkpoints found in {CKPT_DIR}")
 
-# Dropdown để chọn checkpoint
-checkpoint_selector = gr.Dropdown(
-    choices=ckpt_files,
-    value=ckpt_files[0],      # mặc định chọn file đầu tiên
-    label="Select Checkpoint"
-)
-
 # Textbox để hiển thị trạng thái load model
 status = gr.Textbox(label="Model Status", interactive=False)
 
-# Hàm để load model lại mỗi khi chọn checkpoint khác
-def reload_model(ckpt_path):
-    global model
+# Đặt global ở gần đầu file (nếu chưa có)
+model = None
+dac_model = None
 
-    # Nếu là .safetensors: đọc an toàn bằng safetensors rồi convert sang .pt tạm
-    # để giữ nguyên luồng nạp của Dia.from_local (vốn dùng torch.load bên trong).
+def load_model_once():
+    """
+    Load model duy nhất một lần khi khởi động.
+    Giữ logic .safetensors -> .pt, half/compile chỉ trên CUDA, gắn DAC một lần.
+    """
+    global model, dac_model
+
+    if model is not None:
+        return f"Model already loaded on {device}"
+
+    ckpt_path = Path(args.local_ckpt)
     tmp_pt_path = None
-    if str(ckpt_path).endswith(".safetensors"):
-        state_dict = safe_load_file(str(ckpt_path), device="cpu")  # KHÔNG dùng pickle
+
+    # Nếu checkpoint là .safetensors, chuyển tạm sang .pt để tương thích torch.load
+    if ckpt_path.suffix == ".safetensors":
+        try:
+            from safetensors.torch import load_file as safe_load_file
+        except Exception as e:
+            raise RuntimeError("Chưa cài safetensors, không thể nạp .safetensors") from e
+
+        state_dict = safe_load_file(str(ckpt_path), device="cpu")
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pt")
         tmp_pt_path = tmp.name
         tmp.close()
-        torch.save(state_dict, tmp_pt_path)  # chuyển dạng sang .pt (pickle) để Dia.from_local nạp
-
+        torch.save(state_dict, tmp_pt_path)
         ckpt_to_load = tmp_pt_path
     else:
-        ckpt_to_load = ckpt_path
+        ckpt_to_load = str(ckpt_path)
 
-    # Nạp model theo config + checkpoint đã chuẩn hóa ở trên
-    model = Dia.from_local(
+    # Gọi Dia.from_local với compute_dtype nếu bạn đã khai báo ở Bước 2
+    kwargs = dict(
         config_path=args.config,
         checkpoint_path=ckpt_to_load,
-        device=device
+        device=device,
     )
+    if "compute_dtype" in globals():
+        kwargs["compute_dtype"] = compute_dtype
 
-    # Dọn file tạm (nếu có)
+    model_local = Dia.from_local(**kwargs)
+
+    # Xoá file tạm (nếu có)
     if tmp_pt_path is not None:
         try:
             Path(tmp_pt_path).unlink(missing_ok=True)
         except Exception:
             pass
 
-    # FP16 nếu cần
-    if args.half and hasattr(model, "model") and isinstance(model.model, torch.nn.Module):
-        model.model = model.model.half()
+    # half / compile CHỈ trên CUDA
+    if getattr(args, "half", False) and device.type == "cuda" and hasattr(model_local, "model"):
+        model_local.model = model_local.model.half()
 
-    # torch.compile nếu cần
-    if args.compile and hasattr(model, "model") and isinstance(model.model, torch.nn.Module):
-        model.model = torch.compile(model.model, backend="inductor")
+    if getattr(args, "compile", False) and device.type == "cuda" and hasattr(model_local, "model"):
+        model_local.model = torch.compile(model_local.model, backend="inductor")
 
-    # ✅ BẮT BUỘC GÁN DAC SAU KHI LOAD
-    dac_model = dac.DAC.load(dac.utils.download())
-    dac_model = dac_model.to(device)
-    model.dac_model = dac_model
+    # Gắn DAC đúng device — chỉ load một lần cho toàn app
+    if dac_model is None:
+        _dac = dac.DAC.load(dac.utils.download()).to(device)
+        dac_model_local = _dac
+        globals()["dac_model"] = dac_model_local
+    else:
+        dac_model_local = dac_model
 
-    return f"Loaded checkpoint: {Path(ckpt_path).name}"
+    model_local.dac_model = dac_model_local
+
+    # Xuất ra global
+    model = model_local
+    return f"Loaded checkpoint: {ckpt_path.name} on {device}"
 
 # --- Global Setup ---
 parser = argparse.ArgumentParser(description="Gradio interface for Nari TTS")
-parser.add_argument(
-    "--device", type=str, default=None, help="Force device (e.g., 'cuda', 'mps', 'cpu')"
-)
+parser.add_argument("--device", type=str, default=None, help="Force device (e.g., 'cuda', 'mps', 'cpu')")
 parser.add_argument("--share", action="store_true", help="Enable Gradio sharing")
 parser.add_argument("--local_ckpt", type=str, default="dia/model.safetensors", help="path to your local checkpoint")
 parser.add_argument("--config", type=str, default="dia/config_inference.json", help="path to your inference")
@@ -107,47 +123,65 @@ parser.add_argument("--compile", type=bool, default=False, help="torch compile m
 
 args = parser.parse_args()
 
-
 # Determine device
 if args.device:
     device = torch.device(args.device)
 elif torch.cuda.is_available():
     device = torch.device("cuda")
-# Simplified MPS check for broader compatibility
 elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-    # Basic check is usually sufficient, detailed check can be problematic
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
-
 print(f"Using device: {device}")
+
+if device.type == "cuda":
+    try:
+        # Cho phép TF32: nhanh hơn trên Ampere+ mà vẫn ổn định
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        torch.set_float32_matmul_precision("high")
+    except Exception:
+        pass
+    try:
+        # Ưu tiên Flash-Attention trong SDPA nếu có
+        from torch.nn.attention import sdpa_kernel
+        sdpa_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=True)
+    except Exception:
+        pass
+        
+# Dtype cho Dia (app.py dùng chuỗi cho compute_dtype)
+_dtype_map = {"cpu": "float32", "mps": "float32", "cuda": "float16"}
+compute_dtype = _dtype_map.get(device.type, "float16")
+print(f"compute_dtype for Dia: {compute_dtype}")
 
 # Load Nari model and config
 print("Loading Nari model...")
 
 try:
-    cfg = DiaConfig.load("dia/config.json")
+    cfg = DiaConfig.load(args.config if getattr(args, "config", None) else "dia/config.json")
 
     ptmodel = DiaModel(cfg)
-    if args.half:
+
+    # ✅ half chỉ trên CUDA
+    if getattr(args, "half", False) and device.type == "cuda":
         ptmodel = ptmodel.half()
-    if args.compile:
+
+    # ✅ compile chỉ trên CUDA
+    if getattr(args, "compile", False) and device.type == "cuda":
         ptmodel = torch.compile(ptmodel, backend="inductor")
 
+    # Tải state ở CPU rồi chuyển device
     state = _torch_load_compat(args.local_ckpt, map_location="cpu")
-    if "model" in state:
-        ptmodel.load_state_dict(state["model"])
-    else:
-        ptmodel.load_state_dict(state)
+    ptmodel.load_state_dict(state["model"] if "model" in state else state, strict=True)
+
     print("✅ Model loaded successfully! Please wait...")
     ptmodel = ptmodel.to(device).eval()
 
     model = Dia(cfg, device)
     model.model = ptmodel
 
-    # ✅ Cần thiết để voice cloning hoạt động
-    dac_model = dac.DAC.load(dac.utils.download())
-    dac_model = dac_model.to(device)
+    # ✅ DAC đúng device
+    dac_model = dac.DAC.load(dac.utils.download()).to(device)
     model.dac_model = dac_model
 
 except Exception as e:
@@ -209,6 +243,7 @@ def run_inference(
 
     try:
         prompt_path_for_generate = None
+        
         if audio_prompt_input is not None:
             sr, audio_data = audio_prompt_input
             # Resample nếu không phải 44100
@@ -222,7 +257,7 @@ def run_inference(
                     sr = 44100
                 except Exception as e:
                     raise gr.Error(f"Resampling failed: {e}")
-
+                
             # Check if audio_data is valid
             if (
                 audio_data is None
@@ -289,6 +324,7 @@ def run_inference(
                     except Exception as write_e:
                         print(f"Error writing temporary audio file: {write_e}")
                         raise gr.Error(f"Failed to save audio prompt: {write_e}")
+                    
 
         # 3. Run Generation
 
@@ -445,13 +481,12 @@ def run_inference(
 
     return output_audio
 
-
 # --- Create Gradio Interface ---
 css = """
 #col-container {max-width: 90%; margin-left: auto; margin-right: auto;}
 """
 # Attempt to load default text from example.txt
-default_text = ""
+default_text = "[HocEnglishOnline] Quick tip: “small wins” nghĩa là thắng lợi nhỏ; ghi lại để não nhận phần thưởng, động lực sẽ tăng."
 example_txt_path = Path("./example.txt")
 if example_txt_path.exists():
     try:
@@ -461,20 +496,16 @@ if example_txt_path.exists():
     except Exception as e:
         print(f"Warning: Could not read example.txt: {e}")
 
-
 # Build Gradio UI
 with gr.Blocks(css=css) as demo:
     gr.Markdown("# Nari Text-to-Speech Synthesis")
-    # ← chèn selector/check status
+
+    # Chỉ hiển thị trạng thái (không còn dropdown chọn checkpoint)
     with gr.Row():
-        checkpoint_selector.render()
         status.render()
-    checkpoint_selector.change(
-        fn=reload_model,
-        inputs=[checkpoint_selector],
-        outputs=[status]
-    )
-    init_msg = reload_model(checkpoint_selector.value)
+
+    # Load model duy nhất một lần khi khởi động
+    init_msg = load_model_once()
     status.value = init_msg
     
     with gr.Row(equal_height=False):
@@ -594,8 +625,6 @@ with gr.Blocks(css=css) as demo:
                 interactive=False
             )
 
-
-
     # Link button click to function
     run_button.click(
         fn=run_inference,
@@ -613,9 +642,7 @@ with gr.Blocks(css=css) as demo:
         api_name="generate_audio",
     )
 
-
 # --- Launch the App ---
 if __name__ == "__main__":
     print("Launching Gradio interface...")
     demo.launch(share=True, server_name="0.0.0.0")
-
